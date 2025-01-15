@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+        <head>
+            <title>DSLab Image Generator</title>
+            <style>
+                body {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    min-height: 100vh;
+                    font-family: Arial, sans-serif;
+                    background-color: #f0f2f5;
+                    margin: 0;
+                }
+                .container {
+                    background-color: #fff;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                    padding: 20px;
+                    width: 100%;
+                    max-width: 400px;
+                    text-align: center;
+                }
+                h2 {
+                    color: #333;
+                }
+                h4 {
+                    color: #333;
+                }
+                label {
+                    display: block;
+                    margin-top: 10px;
+                    font-weight: bold;
+                    color: #555;
+                }
+                input[type="text"], input[type="number"] {
+                    width: calc(100% - 20px);
+                    padding: 8px 10px;
+                    margin: 8px 0;
+                    border-radius: 5px;
+                    border: 1px solid #ccc;
+                    font-size: 16px;
+                }
+                input[type="submit"] {
+                    background-color: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    margin-top: 10px;
+                    border: none;
+                    border-radius: 5px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    transition: background-color 0.3s;
+                }
+                input[type="submit"]:hover {
+                    background-color: #45a049;
+                }
+                img {
+                    margin-top: 15px;
+                    max-width: 100%;
+                    border-radius: 10px;
+                    display: none;
+                }
+                /* 로딩 애니메이션 스타일 */
+                .loader {
+                    border: 8px solid #f3f3f3;
+                    border-top: 8px solid #4CAF50;
+                    border-radius: 50%;
+                    width: 50px;
+                    height: 50px;
+                    animation: spin 1s linear infinite;
+                    margin: 20px auto;
+                    display: none;
+                }
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>DSLab Image Generator</h2>
+                <h4>Powered by Stable-Diffusion v3.5-Large</h4>
+                <form id="generateForm">
+                    <label for="prompt">Prompt:</label>
+                    <input type="text" id="prompt" name="prompt" value="A raccoon trapped inside a glass jar full of colorful candies, the background is steamy with vivid colors"><br><br>
+                    <label for="guidance_scale">Guidance Scale:</label>
+                    <input type="number" id="guidance_scale" name="guidance_scale" value="4.0" step="0.1"><br><br>
+                    <label for="num_inference_steps">Inference Steps:</label>
+                    <input type="number" id="num_inference_steps" name="num_inference_steps" value="4"><br><br>
+                    <input type="submit" value="Generate">
+                </form>
+                <div class="loader" id="loader"></div> <!-- 로딩 애니메이션 -->
+                <img id="result" src="" alt="Generated Image">
+            </div>
+            <script>
+                document.querySelector("#generateForm").onsubmit = async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const data = {
+                        prompt: formData.get("prompt"),
+                        guidance_scale: formData.get("guidance_scale"),
+                        num_inference_steps: formData.get("num_inference_steps")
+                    };
+
+                    // 로딩 애니메이션 표시
+                    document.getElementById("loader").style.display = "block";
+                    document.getElementById("result").style.display = "none";
+
+                    const res = await fetch("/generate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await res.json();
+
+                    // 로딩 애니메이션 숨기고 이미지 표시
+                    document.getElementById("loader").style.display = "none";
+                    const imgElement = document.getElementById("result");
+                    imgElement.src = "data:image/png;base64," + result.image;
+                    imgElement.style.display = "block";
+                };
+            </script>
+        </body>
+    </html>
